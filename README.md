@@ -1,26 +1,33 @@
-# SIDE A — For the record
+# SIDE A — A world of sound
 
-A complete redesign of the original coffee concept as a fictional listening bar. Palette: burnt orange `#d5360c`, warm ivory `#e6d5bd`, soft black `#101010`.
+An immersive listening-bar concept built with vanilla JavaScript, Three.js, and Web Audio.
 
-## Run
+Live website: https://ember-coffee-slow-mornings.honeymorel2.chatgpt.site/
 
-`npm run dev` serves the static site at http://127.0.0.1:4173. `npm run check` checks the JavaScript syntax. Deploy `dist` to a static host; no build step or API keys are required.
+## Run locally
 
-## The scrolling experience
+Requires Node.js. No installation or build step is needed.
 
-1. Reflective, rotating 3D vinyl with microgrooves and a custom printed label.
-2. Turntable assembly: plinth, feet, strobe platter, record, spindle, tonearm, cartridge, and controls.
-3. Exploded speaker components: cabinet, woofer, tweeter, magnet, and copper coil.
-4. Paired speakers and concentric waves in 3D space.
-5. Scroll-expanded circular room reveal with a camera-like push through custom architectural imagery.
-6. Word-by-word manifesto, interactive graphic record sleeves, and three optional synthesized sound studies.
+    npm run dev
 
-All 3D geometry and textures are created in `dist/app.js` using locally vendored Three.js. The site defaults to muted. The audio is original procedural synthesis, not commercial recordings. Native dialogs handle the full-screen navigation and session picker. Ambient motion can be paused, reduced-motion preferences are honored, and WebGL failure shows a graphic fallback. No bookings, payments, mailing lists, or personal data collection.
+Open http://127.0.0.1:4173. Run `npm run check` for JavaScript syntax checks.
 
-## Verification
+## Experience
 
-Checked in the browser at desktop and mobile widths. Verified all four 3D states, mobile model framing, chapter controls, navigation dialog, record selection, sound on/off state, session picker, image loading, and absence of horizontal overflow and console errors. Physical-device GPU performance has not been benchmarked.
+- Surreal landscape artwork and scroll-driven parallax.
+- Draggable vinyl records with reflective grooves and brass details.
+- A continuous record-to-turntable transition and floating 3D musical notes.
+- Exploded speakers, vibrating cones, and frosted-glass pressure ripples.
+- A playable keyboard with sharps, synthesized sound, and a waveform display.
+- Interactive record sleeves, optional audio, navigation and session dialogs.
+- Motion pause, reduced-motion support, and a WebGL fallback.
 
-Screenshots are in `qa/side-a-*.jpg`. The custom room photograph was generated with the built-in image-generation tool. Source and prompt details are in `ART-DIRECTION.md`. Original Ember files are preserved in Git history and `art-originals/ember-v1.*`.
+## Source and deployment
 
-The same Sites project and private access are preserved. Its existing URL retains the original coffee slug.
+The complete static website is in `dist/`. Three.js and fonts are vendored locally. There are no API keys or backend services.
+
+Sites hosts the public website. The deployment URL retains the original coffee concept's slug. GitHub stores the source; pushing here alone does not trigger a Sites deployment. The `dist/` folder can also be served by another static host.
+
+Artwork notes are in `ART-DIRECTION.md` and `ART-DIRECTION-WORLD.md`. Earlier assets remain in `art-originals/` and Git history.
+
+SIDE A is a fictional design concept, not a physical venue. Audio is procedural synthesis, not commercial recordings.
