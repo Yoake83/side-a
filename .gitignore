@@ -1,0 +1,4 @@
+node_modules/
+*.zip
+qa/
+dist/assets/*.png
