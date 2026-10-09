@@ -83,8 +83,10 @@ function speaker(){const sp=new T.Group();const shell=new T.Group();sp.add(shell
  const magnet=cylinder(.44,.36,darkMetal,sp,[0,-.52,-.62],Math.PI/2);components.push(magnet);const coil=cylinder(.22,.28,new T.MeshStandardMaterial({color:'#b8763d',metalness:.88,roughness:.28}),sp,[0,-.52,-.9],Math.PI/2);components.push(coil);
  const trim=mesh(new T.BoxGeometry(.42,.1,.035),ivory,shell,[.66,-1.37,.79]);for(const x of[-.86,.86])mesh(new T.BoxGeometry(.26,.15,.6),rubber,shell,[x,-1.73,.1]);sp.userData={shell,woofer,tweeter,magnet,coil};return sp}
 const speakerOne=speaker();scene.add(speakerOne);const speakerTwo=speaker();scene.add(speakerTwo);
-// Concentric sound waves occupy actual depth and expand with the system scene.
-const waves=new T.Group();scene.add(waves);const waveMat=new T.MeshBasicMaterial({color:'#d9989a',transparent:true,opacity:.2,depthWrite:false});for(let i=0;i<9;i++){const r=new T.Mesh(new T.TorusGeometry(1.2+i*.55,.012,6,100),waveMat.clone());r.position.z=-1-i*.2;waves.add(r)}
+// Each cabinet emits its own wavefronts from the moving bass driver.
+function pressureField(speaker){const group=new T.Group();speaker.add(group);for(let i=0;i<6;i++){const mat=new T.MeshBasicMaterial({color:i%2?'#e8b18a':'#e4a0ac',transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending});const ring=new T.Mesh(new T.TorusGeometry(.82,.014,8,112),mat);group.add(ring)}return group}
+const pressureOne=pressureField(speakerOne),pressureTwo=pressureField(speakerTwo);
+const stagePin=$('.pin');
 // Foreground objects cross at distinct depths as the visitor enters the world.
 const orbitRecords=new T.Group();scene.add(orbitRecords);for(let i=0;i<2;i++){const d=record();orbitRecords.add(d);d.userData.index=i}
 const dustGeo=new T.BufferGeometry(),dustPositions=new Float32Array(90*3);for(let i=0;i<90;i++){dustPositions[i*3]=Math.sin(i*12.13)*10;dustPositions[i*3+1]=Math.cos(i*9.41)*4;dustPositions[i*3+2]=-3+Math.sin(i*2.17)*3}dustGeo.setAttribute('position',new T.BufferAttribute(dustPositions,3));const dust=new T.Points(dustGeo,new T.PointsMaterial({color:0xffe5bf,size:.025,transparent:true,opacity:.65,depthWrite:false}));scene.add(dust);
@@ -129,7 +131,16 @@ renderScene=(s,time,mx,my,dt)=>{const mobile=w<=760,worldW=8.45*w/h;const deckIn
  const explode=Math.sin(smooth(2.12,2.83,s)*Math.PI)*1.35*(mobile?.65:1);speakerOne.userData.woofer.position.z=.8+explode; speakerOne.userData.tweeter.position.z=.85+explode*.65;speakerOne.userData.magnet.position.z=-.62-explode*.9;speakerOne.userData.coil.position.z=-.9-explode*1.4;speakerOne.userData.shell.rotation.y=-explode*.15;
  speakerTwo.position.set(mobile?.86:2.15,mobile?-.8:-.35,mix(-4,0,systemIn));speakerTwo.rotation.set(.07,-.22+mx*.1,-.02);speakerTwo.scale.multiplyScalar(systemIn);
  speakerOne.scale.multiplyScalar(mix(1,.7,systemIn));speakerTwo.scale.multiplyScalar(.7);speakerOne.position.y-=systemIn*.8;speakerTwo.position.y-=systemIn*.8;
- const pulse=paused?0:Math.sin(time*(audioOn?records[selected].bpm/60*Math.PI*2:3))*.028;speakerOne.userData.woofer.scale.set(1,1,1+pulse*4);speakerTwo.userData.woofer.scale.set(1,1,1+pulse*4);waves.visible=s>2.75;waves.position.y=mobile?-.7:-.4;waves.rotation.y=mx*.05;waves.scale.setScalar(mobile?.55:1);waves.children.forEach((r,i)=>{r.scale.setScalar(1+Math.sin(time*1.2-i*.3)*.04);r.material.opacity=systemIn*(.2-i*.015)});
+ const speakerPresence=smooth(1.95,2.25,s),cycles=time*(audioOn?records[selected].bpm/60:1.12),beatPhase=cycles%1;
+ const bassHit=paused?0:Math.exp(-beatPhase*10)*speakerPresence;
+ const coneTravel=bassHit*Math.sin(beatPhase*28)*.075;
+ speakerOne.userData.woofer.position.z+=coneTravel;speakerTwo.userData.woofer.position.z=.8+coneTravel;
+ speakerOne.userData.woofer.scale.set(1+bassHit*.012,1+bassHit*.012,1+bassHit*.14);speakerTwo.userData.woofer.scale.copy(speakerOne.userData.woofer.scale);
+ speakerOne.rotation.z+=Math.sin(time*47)*bassHit*.003;speakerTwo.rotation.z-=Math.sin(time*47)*bassHit*.003;
+ function animatePressure(field,speaker,strength){field.visible=strength>.001;field.position.copy(speaker.userData.woofer.position);field.position.z+=.16;field.children.forEach((ring,i)=>{const phase=((cycles+i)*.28)%1;const radius=1+phase*4.8;ring.scale.setScalar(radius);ring.position.z=phase*2.1;ring.material.opacity=strength*Math.sin(Math.PI*phase)*Math.pow(1-phase,1.2)*.48})}
+ animatePressure(pressureOne,speakerOne,speakerPresence);animatePressure(pressureTwo,speakerTwo,speakerPresence*systemIn);
+ // A short pressure pulse moves and softens the scene; navigation remains steady.
+ const shake=bassHit*(mobile?.65:1.25);stagePin.style.translate=`${Math.sin(time*67)*shake}px ${Math.cos(time*53)*shake*.55}px`;stagePin.style.filter=bassHit>.015?`blur(${bassHit*(mobile?.3:.55)}px)`:'none';
  const worldFade=1-smooth(.20,.82,s);orbitRecords.visible=worldFade>0;orbitRecords.children.forEach((d,i)=>{const coords=[[mobile?-.34:-.20,mobile?-2.8:-2.2,-.7],[.36,-.3,-1.8]][i];d.position.set(worldW*coords[0]+mx*(i+1)*.15,coords[1]+Math.sin(time*.5+i)*.13-s*(i+1)*2,coords[2]+s*5);d.rotation.set(-.6+i*.22,.3+i*.2,time*.06+i);d.scale.setScalar((mobile?.18:.27)*worldFade*(1+i*.18))});dust.visible=s<1;dust.rotation.z=time*.007;dust.position.y=-s;dust.material.opacity=worldFade*.65;
  const notationVisibility=smooth(.70,1.02,s)*(1-smooth(1.70,2.06,s));musicalNotes.visible=notationVisibility>.001;
  musicalNotes.children.forEach((note,i)=>{const flight=(time*.085+i/7)%1,angle=flight*Math.PI*2+i*1.7;const radius=worldW*(mobile?.26:.13);note.position.set(right+Math.cos(angle)*radius,(mobile?-1.2:-.75)+flight*(mobile?2.25:3.8),Math.sin(angle)*1.1+.3);note.rotation.set(Math.sin(time*.5+i)*.15,Math.sin(angle*.7)*.55,Math.sin(angle+i)*.23);const envelope=Math.min(1,flight*7,(1-flight)*7);note.scale.setScalar((mobile?.43:.65)*(i%3===1?.85:1)*notationVisibility);note.userData.material.opacity=notationVisibility*envelope*.95;});
