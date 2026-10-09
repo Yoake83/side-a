@@ -1,5 +1,13 @@
 # Generated imagery
 
+## SIDE A redesign — listening room
+
+Generated with the built-in image_gen tool. Original: `art-originals/side-a-room.png`. Optimized site asset: `dist/assets/room.webp`.
+
+Use case: photorealistic-natural. Create a cinematic ultra-wide architectural editorial photograph for a fictional high-end listening bar called SIDE A. No lettering, no text, no logos, no people. Brutalist intimate room with deep soft-black walls and ceiling, a warm ivory monolithic counter, two massive beautifully crafted burnt-orange horn loudspeakers on either side, a black analog turntable on the bar, dark orange upholstered low seating in foreground. Dramatic narrow strips of amber tungsten lighting, tactile black stone, walnut wood grain and brushed metal, a circular glowing ivory wall light behind the bar in center. Symmetrical almost Wes Anderson frontal composition, high-end interior photography, incredible physical realism, moody warm blacks, strong design, tasteful understated film grain. Main accent exact orange #d5360c, ivory #e6d5bd and black #101010. Widescreen 16:9, entire room architecture visible, photograph only.
+
+Record sleeves are code-native graphic designs. The vinyl, turntable and speakers are real WebGL geometry, with canvas-generated surface textures.
+
 Generator: built-in image_gen tool. Each image was generated independently, then encoded as WebP for delivery. No reference photographs were supplied.
 
 ## Café photograph
