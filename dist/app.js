@@ -14,6 +14,7 @@ function openDialog(d){d.showModal();document.body.style.overflow='hidden'}
 const navDialog=$('#nav-dialog'),sessionDialog=$('#session-dialog');$('.menu-toggle').addEventListener('click',()=>openDialog(navDialog));$('#session-open').addEventListener('click',()=>openDialog(sessionDialog));
 $$('dialog').forEach(d=>{d.querySelector('.close').addEventListener('click',()=>d.close());d.addEventListener('close',()=>document.body.style.overflow='');d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.target===d&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))d.close()})});
 $$('#nav-dialog a').forEach(a=>a.addEventListener('click',()=>navDialog.close()));$$('[data-session]').forEach(b=>b.addEventListener('click',()=>{chooseRecord(+b.dataset.session);sessionDialog.close();setAudio(true);$('#collection').scrollIntoView({behavior:'instant'})}));
+$('.journey-button').addEventListener('click',()=>progressButtons[1].click());
 const experience=$('.experience'),room=$('.room'),panels=$$('.scene-copy'),progressButtons=$$('[data-scene]');
 progressButtons.forEach(b=>b.addEventListener('click',()=>{const positions=[0,1.3,2.48,3.4];scrollTo({top:experience.offsetTop+positions[+b.dataset.scene]/4*(experience.offsetHeight-innerHeight),behavior:reduced.matches?'instant':'smooth'})}));
 // Each word brightens in reading order as the manifesto enters the viewport.
@@ -23,16 +24,16 @@ function blendColor(a,b,t){return `rgb(${a.map((v,i)=>Math.round(mix(v,b[i],t)))
 let scenePosition=0,rawPosition=0,lastTime=0,ambient=0,pointerX=0,pointerY=0,px=0,py=0,renderScene;
 addEventListener('pointermove',e=>{pointerX=e.clientX/innerWidth-.5;pointerY=e.clientY/innerHeight-.5},{passive:true});addEventListener('pointerleave',()=>{pointerX=pointerY=0});
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-lastTime)/1000,.04);lastTime=now;if(document.hidden)return;if(!paused)ambient+=dt;const rect=experience.getBoundingClientRect();rawPosition=clamp(-rect.top/(experience.offsetHeight-innerHeight))*4;scenePosition=paused?rawPosition:mix(scenePosition,rawPosition,1-Math.exp(-dt*5.5));px=mix(px,paused?0:pointerX,dt*3);py=mix(py,paused?0:pointerY,dt*3);
- const s=scenePosition;const weights=[1-smooth(.55,.9,s),smooth(.65,1,s)*(1-smooth(1.7,2.02,s)),smooth(1.82,2.15,s)*(1-smooth(2.8,3.1,s)),smooth(2.93,3.3,s)];let active=weights.indexOf(Math.max(...weights));
+ const s=scenePosition;const weights=[1-smooth(.38,.70,s),smooth(.74,1.05,s)*(1-smooth(1.7,2.02,s)),smooth(1.82,2.15,s)*(1-smooth(2.8,3.1,s)),smooth(2.93,3.3,s)];let active=weights.indexOf(Math.max(...weights));
  panels.forEach((p,i)=>{const w=weights[i];p.style.opacity=w;p.style.visibility=w>.01?'visible':'hidden';p.style.transform=w>.999?"none":`translateY(${(1-w)*(i===0?-45:35)}px)`;const hidden=w<.5;p.setAttribute('aria-hidden',String(hidden));p.inert=hidden});progressButtons.forEach((b,i)=>b.classList.toggle('active',active===i));
- const light=smooth(.45,1.0,s),dark=smooth(1.72,2.15,s);const orange=[213,54,12],ivory=[230,213,189],black=[16,16,16];const bg=orange.map((v,i)=>mix(mix(v,ivory[i],light),black[i],dark));$('.stage-background').style.background=`rgb(${bg.join(',')})`;$('.experience-foot').style.color=dark>.5?'#e6d5bd':'#101010';$('.orbit-graphic').style.opacity=1-light;
+ const light=smooth(.45,1.0,s),dark=smooth(1.72,2.15,s);const orange=[232,167,143],ivory=[239,223,202],black=[33,22,28];const bg=orange.map((v,i)=>mix(mix(v,ivory[i],light),black[i],dark));$('.stage-background').style.background=`rgb(${bg.join(',')})`;$('.experience-foot').style.color=s<.65||dark>.5?'#fff0df':'#392126';$('.orbit-graphic').style.opacity=1-light;const worldExit=smooth(.40,1.05,s);$('.sound-world').style.opacity=1-worldExit;$('.sound-world img').style.transform=`translate3d(${px*-18}px,${py*-12-s*38}px,0) scale(${1.055+s*.24})`;$('.world-caption').style.opacity=1-smooth(.25,.55,s);$('.world-grid').style.opacity=smooth(.75,1.15,s)*(1-smooth(1.6,2.1,s))*.3;$('.hero-coordinate').style.transform=`translateY(${-s*110}px)`;
  const rr=room.getBoundingClientRect(),rp=clamp(-rr.top/(room.offsetHeight-innerHeight));const reveal=smooth(.05,.85,rp);$('.room-image').style.clipPath=`circle(${mix(17,85,reveal)}% at 50% 55%)`;$('.room-image img').style.transform=`scale(${mix(1.25,1,reveal)})`;$('.room-title').style.transform=`scale(${mix(1,1.25,reveal)}) translateY(${-reveal*60}px)`;$('.room-title').style.opacity=1-smooth(.1,.6,rp);$('.room-caption').style.opacity=smooth(.5,.85,rp);
  const mr=$('.manifesto').getBoundingClientRect();const reading=clamp((innerHeight*.85-mr.top)/(mr.height*.75));words.forEach((w,i)=>w.style.opacity=reduced.matches?1:mix(.15,1,smooth(i/words.length,(i+2)/words.length,reading)));
  experience.style.background=$('.stage-background').style.background;
  const collectionTop=$('.collection').getBoundingClientRect().top,closingTop=$('.closing').getBoundingClientRect().top;
- $('.nav').style.background=rect.bottom>95?experience.style.background:(collectionTop>95?'#101010':closingTop>95?'#e6d5bd':'#d5360c');
- document.body.classList.toggle('dark-nav',(rect.bottom>0&&s>1.94)||(rr.top<95&&$('.collection').getBoundingClientRect().top>95));document.body.classList.toggle('nav-solid',rect.bottom<0&&rr.top<0&&rr.bottom>0&&rp>.5);
- if(renderScene&&rect.bottom>0)renderScene(s,ambient,px,py,dt);}
+ $('.nav').style.background=rect.bottom>95?(s<.5?'transparent':experience.style.background):(collectionTop>95?'#21161c':closingTop>95?'#efdfca':'#a32c2d');
+ document.body.classList.toggle('dark-nav',(rect.bottom>0&&(s<.5||s>1.94))||closingTop<95||(rr.top<95&&$('.collection').getBoundingClientRect().top>95));document.body.classList.toggle('nav-solid',rect.bottom<0&&rr.top<0&&rr.bottom>0&&rp>.5);
+ $('.nav').classList.toggle('hero-nav',rect.bottom>95&&s<.5); if(renderScene&&rect.bottom>0)renderScene(s,ambient,px,py,dt);}
 requestAnimationFrame(frame);
 
 async function init3D(){
@@ -81,9 +82,12 @@ function speaker(){const sp=new T.Group();const shell=new T.Group();sp.add(shell
  const trim=mesh(new T.BoxGeometry(.42,.1,.035),ivory,shell,[.66,-1.37,.79]);for(const x of[-.86,.86])mesh(new T.BoxGeometry(.26,.15,.6),rubber,shell,[x,-1.73,.1]);sp.userData={shell,woofer,tweeter,magnet,coil};return sp}
 const speakerOne=speaker();scene.add(speakerOne);const speakerTwo=speaker();scene.add(speakerTwo);
 // Concentric sound waves occupy actual depth and expand with the system scene.
-const waves=new T.Group();scene.add(waves);const waveMat=new T.MeshBasicMaterial({color:'#d5360c',transparent:true,opacity:.2,depthWrite:false});for(let i=0;i<9;i++){const r=new T.Mesh(new T.TorusGeometry(1.2+i*.55,.012,6,100),waveMat.clone());r.position.z=-1-i*.2;waves.add(r)}
+const waves=new T.Group();scene.add(waves);const waveMat=new T.MeshBasicMaterial({color:'#d9989a',transparent:true,opacity:.2,depthWrite:false});for(let i=0;i<9;i++){const r=new T.Mesh(new T.TorusGeometry(1.2+i*.55,.012,6,100),waveMat.clone());r.position.z=-1-i*.2;waves.add(r)}
+// Foreground objects cross at distinct depths as the visitor enters the world.
+const orbitRecords=new T.Group();scene.add(orbitRecords);for(let i=0;i<2;i++){const d=record();orbitRecords.add(d);d.userData.index=i}
+const dustGeo=new T.BufferGeometry(),dustPositions=new Float32Array(90*3);for(let i=0;i<90;i++){dustPositions[i*3]=Math.sin(i*12.13)*10;dustPositions[i*3+1]=Math.cos(i*9.41)*4;dustPositions[i*3+2]=-3+Math.sin(i*2.17)*3}dustGeo.setAttribute('position',new T.BufferAttribute(dustPositions,3));const dust=new T.Points(dustGeo,new T.PointsMaterial({color:0xffe5bf,size:.025,transparent:true,opacity:.65,depthWrite:false}));scene.add(dust);
 let w=innerWidth,h=innerHeight;function resize(){w=innerWidth;h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}addEventListener('resize',resize);
-renderScene=(s,time,mx,my)=>{const mobile=w<=760,worldW=8.45*w/h;const deckIn=smooth(.58,1.22,s),speakerIn=smooth(1.75,2.24,s),systemIn=smooth(2.8,3.48,s);const worldScale=mobile?Math.min(.7,worldW/5.8):Math.min(1.2,worldW/9.5);const right=mobile?0:worldW*.23;
+renderScene=(s,time,mx,my)=>{const mobile=w<=760,worldW=8.45*w/h;const deckIn=smooth(.58,1.22,s),speakerIn=smooth(1.75,2.24,s),systemIn=smooth(2.8,3.48,s);const worldScale=mobile?Math.min(.7,worldW/5.8):Math.min(1.2,worldW/9.5);const right=mobile?0:worldW*.19;
  // The same visible record travels continuously to the hidden landing anchor.
  const landing=smooth(.28,1.38,s),deckReveal=smooth(.40,.98,s);
  deck.visible=s>.40&&s<2.23;deck.scale.setScalar(worldScale*(mobile?.86:1)*(.78+.22*deckIn)*(1-speakerIn*.4));deck.position.set(right,mobile?-.65:-.55,-speakerIn*5);deck.rotation.set(mix(.30,.60,deckIn)+my*.04,mix(-.35,-.25,deckIn)+mx*.07,mix(-.08,.04,deckIn));
@@ -91,24 +95,47 @@ renderScene=(s,time,mx,my)=>{const mobile=w<=760,worldW=8.45*w/h;const deckIn=sm
  deck.position.y-=(1-deckReveal)*9;
  const assembly=1-smooth(.65,1.40,s);plinth.position.y=-assembly*.55;platter.position.y=.42+assembly*.20;deckRecord.position.y=.66;deckRecord.rotation.z=0;armPivot.position.y=.45+assembly*.3;armPivot.rotation.y=mix(-.2,-.62,smooth(1.35,1.7,s));
  deck.updateMatrixWorld(true);deckRecord.getWorldPosition(landingPosition);deckRecord.getWorldQuaternion(landingPose);deckRecord.getWorldScale(landingScale);
- heroPose.setFromEuler(new T.Euler(.18+my*.035,-.24+mx*.06,-.09));
- vinyl.visible=s<2.23;vinyl.position.set(mobile?0:worldW*.255,mobile?-.68:.22,0);
+ heroPose.setFromEuler(new T.Euler(-.95+my*.10,-.20+mx*.18,-.22+mx*.07));
+ vinyl.visible=s<2.23;vinyl.position.set(mobile?worldW*.035:worldW*.11,mobile?-1.62:-1.72,mix(.8,0,landing));
  // Keep the early trajectory above the rising deck, then converge exactly.
  const destination=landingPosition.clone();destination.y+=(1-deckReveal)*9+(1-landing)*.5;
  vinyl.position.lerp(destination,landing);vinyl.quaternion.copy(heroPose).slerp(landingPose,landing);
- const heroScale=mobile?Math.min(.83,worldW*.205):Math.min(1.19,worldW*.106);
+ const heroScale=mobile?Math.min(.58,worldW*.14):Math.min(.82,worldW*.068);
  vinyl.scale.setScalar(mix(heroScale,landingScale.x,landing));vinylDisc.rotation.z=-time*.13;
 
  speakerOne.visible=s>1.78;speakerTwo.visible=s>2.82;const speakerScale=worldScale*(mobile?.95:1.02);speakerOne.scale.setScalar(speakerScale*Math.max(.001,speakerIn));speakerTwo.scale.setScalar(speakerScale*.92);
  speakerOne.position.set(mix(right,mobile?-.73:-2.15,systemIn),mobile?-.75:-.35,0);speakerOne.rotation.set(.07+my*.07,mix(-.68,.22,systemIn)+mx*.1,.02);
  const explode=Math.sin(smooth(2.12,2.83,s)*Math.PI)*1.35*(mobile?.65:1);speakerOne.userData.woofer.position.z=.8+explode; speakerOne.userData.tweeter.position.z=.85+explode*.65;speakerOne.userData.magnet.position.z=-.62-explode*.9;speakerOne.userData.coil.position.z=-.9-explode*1.4;speakerOne.userData.shell.rotation.y=-explode*.15;
  speakerTwo.position.set(mobile?.86:2.15,mobile?-.8:-.35,mix(-4,0,systemIn));speakerTwo.rotation.set(.07,-.22+mx*.1,-.02);speakerTwo.scale.multiplyScalar(systemIn);
+ speakerOne.scale.multiplyScalar(mix(1,.7,systemIn));speakerTwo.scale.multiplyScalar(.7);speakerOne.position.y-=systemIn*.8;speakerTwo.position.y-=systemIn*.8;
  const pulse=paused?0:Math.sin(time*(audioOn?records[selected].bpm/60*Math.PI*2:3))*.028;speakerOne.userData.woofer.scale.set(1,1,1+pulse*4);speakerTwo.userData.woofer.scale.set(1,1,1+pulse*4);waves.visible=s>2.75;waves.position.y=mobile?-.7:-.4;waves.rotation.y=mx*.05;waves.scale.setScalar(mobile?.55:1);waves.children.forEach((r,i)=>{r.scale.setScalar(1+Math.sin(time*1.2-i*.3)*.04);r.material.opacity=systemIn*(.2-i*.015)});
- if(!paused)vinyl.position.y+=Math.sin(time*.65)*.015*(1-landing);renderer.render(scene,camera)};
+ const worldFade=1-smooth(.20,.82,s);orbitRecords.visible=worldFade>0;orbitRecords.children.forEach((d,i)=>{const coords=[[mobile?-.34:-.20,mobile?-2.8:-2.2,-.7],[.36,-.3,-1.8]][i];d.position.set(worldW*coords[0]+mx*(i+1)*.15,coords[1]+Math.sin(time*.5+i)*.13-s*(i+1)*2,coords[2]+s*5);d.rotation.set(-.6+i*.22,.3+i*.2,time*.06+i);d.scale.setScalar((mobile?.18:.27)*worldFade*(1+i*.18))});dust.visible=s<1;dust.rotation.z=time*.007;dust.position.y=-s;dust.material.opacity=worldFade*.65;
+ if(!paused)vinyl.position.y+=Math.sin(time*.8)*.07*(1-landing);renderer.render(scene,camera)};
 renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();document.body.classList.add('no-webgl')});document.body.classList.add('scene-ready');
 }
 init3D().catch(err=>{console.warn('3D unavailable; displaying a graphic fallback.',err);document.body.classList.add('no-webgl')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&audioOn)setAudio(false)});
+
+// An intentionally small instrument: notes start only after a visitor plays.
+const pianoKeys=$$('[data-note]'), noteNames=['C','D','E','F','G','A','B','C′'], noteSteps=[0,2,4,5,7,9,11,12];
+let noteEnergy=0,noteFrequency=261.63,labVisible=false;
+async function playNote(i,semitone=noteSteps[i],name=noteNames[i],key=pianoKeys[i]){
+ if(!audioContext)audioContext=new(window.AudioContext||window.webkitAudioContext)();
+ if(!master){master=audioContext.createGain();master.gain.value=.34;master.connect(audioContext.destination)}
+ try{await audioContext.resume()}catch{return}
+ const t=audioContext.currentTime,f=261.63*2**(semitone/12);noteFrequency=f;noteEnergy=1;
+ tone(f,'sine',t,1.7,.23);tone(f*2,'sine',t,1.0,.06);tone(f*3,'sine',t,.55,.025);
+ key.classList.add('pressed');$('.sound-lab').classList.add('playing');$('.lab-note').textContent=`${name} / ${Math.round(f)} HZ — THAT ONE IS YOURS.`;
+ setTimeout(()=>key.classList.remove('pressed'),220);
+}
+pianoKeys.forEach((key,i)=>key.addEventListener('click',()=>playNote(i)));
+$$('.black-key').forEach((old,i)=>{const key=document.createElement('button');key.className=old.className;const name=['C♯','D♯','F♯','G♯','A♯'][i];key.setAttribute('aria-label',`Play ${name}`);key.addEventListener('click',()=>playNote(0,[1,3,6,8,10][i],name,key));old.replaceWith(key)});
+const pressedKeys=new Set();addEventListener('keydown',e=>{if(!labVisible||e.repeat||e.ctrlKey||e.metaKey||e.altKey||$('dialog[open]')||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const i='asdfghjk'.indexOf(e.key.toLowerCase());if(i<0||pressedKeys.has(e.key))return;pressedKeys.add(e.key);playNote(i)});addEventListener('keyup',e=>pressedKeys.delete(e.key));
+new IntersectionObserver(es=>labVisible=es[0].isIntersecting,{threshold:.15}).observe($('.sound-lab'));
+const scope=$('.scope'),scopeContext=scope.getContext('2d');let scopeTime=0;
+function drawScope(){requestAnimationFrame(drawScope);if(!labVisible||document.hidden)return;const w=scope.clientWidth,h=scope.clientHeight;if(scope.width!==w*2){scope.width=w*2;scope.height=h*2}const c=scopeContext;c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,w,h);c.strokeStyle='#d1a39918';c.lineWidth=.5;for(let x=0;x<w;x+=18){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}c.strokeStyle='#e9b092';c.lineWidth=1;c.beginPath();for(let x=0;x<w;x++){const envelope=Math.sin(x/w*Math.PI);const wave=Math.sin(x/w*Math.PI*(noteFrequency/32)+scopeTime)*Math.sin(x/w*Math.PI*2+scopeTime*.3);const y=h/2+wave*envelope*noteEnergy*h*.36;x?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();noteEnergy*=.975;if(!paused)scopeTime+=.07;if(noteEnergy<.01)$('.sound-lab').classList.remove('playing')}
+drawScope();
+$$('.record-card').forEach(card=>{card.addEventListener('pointermove',e=>{if(reduced.matches||e.pointerType==='touch')return;const r=card.getBoundingClientRect();card.style.setProperty('--rx',`${-(e.clientY-r.top-r.height/2)/r.height*10}deg`);card.style.setProperty('--ry',`${(e.clientX-r.left-r.width/2)/r.width*12}deg`)});card.addEventListener('pointerleave',()=>{card.style.setProperty('--rx','0deg');card.style.setProperty('--ry','0deg')})});
 
 
 
