@@ -93,6 +93,20 @@ recordControl.addEventListener('pointerdown',e=>{if(paused)return;dragging=true;
 recordControl.addEventListener('pointermove',e=>{if(!dragging)return;const delta=(e.clientX-lastDragX)*.009;recordSpin+=delta;spinVelocity=delta*28;lastDragX=e.clientX});
 function releaseRecord(){dragging=false;recordControl.classList.remove('dragging')}recordControl.addEventListener('pointerup',releaseRecord);recordControl.addEventListener('pointercancel',releaseRecord);recordControl.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!paused){e.preventDefault();spinVelocity+=2.2}});
 const projectedRecord=new T.Vector3();
+// Bevelled, volumetric notation follows a rising helix above the platter.
+const musicalNotes=new T.Group();scene.add(musicalNotes);
+function musicSymbol(paired,index){
+ const note=new T.Group(),material=new T.MeshPhysicalMaterial({color:index%3===0?'#8e3542':'#c89860',metalness:index%3===0?.38:.8,roughness:.28,clearcoat:.8,transparent:true,opacity:0,depthWrite:false,envMapIntensity:1.4});
+ const head=new T.Shape();head.absellipse(0,0,.18,.12,-.25,Math.PI*2-.25,false,0);
+ const headGeometry=new T.ExtrudeGeometry(head,{depth:.075,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:.025,bevelThickness:.025,curveSegments:20});headGeometry.translate(0,0,-.04);
+ function stem(x,y){const h=mesh(headGeometry,material,note,[x,y,0]);h.rotation.z=.3;mesh(new T.CylinderGeometry(.027,.027,.78,12),material,note,[x+.145,y+.38,0]);}
+ stem(paired?-.25:0,0);
+ if(paired){stem(.27,.08);const beam=mesh(new T.BoxGeometry(.58,.105,.09),material,note,[.15,.81,0]);beam.rotation.z=.15}
+ else if(index%2===0){const flag=new T.Shape();flag.moveTo(.14,.76);flag.bezierCurveTo(.20,.64,.49,.57,.38,.35);flag.bezierCurveTo(.56,.55,.39,.74,.14,.87);mesh(new T.ExtrudeGeometry(flag,{depth:.06,bevelEnabled:true,bevelSize:.018,bevelThickness:.018,bevelSegments:3,steps:1,curveSegments:18}),material,note,[0,0,-.03]);}
+ note.userData.material=material;return note;
+}
+for(let i=0;i<7;i++)musicalNotes.add(musicSymbol(i%3===1,i));
+
 let w=innerWidth,h=innerHeight;function resize(){w=innerWidth;h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}addEventListener('resize',resize);
 renderScene=(s,time,mx,my,dt)=>{const mobile=w<=760,worldW=8.45*w/h;const deckIn=smooth(.58,1.22,s),speakerIn=smooth(1.75,2.24,s),systemIn=smooth(2.8,3.48,s);const worldScale=mobile?Math.min(.7,worldW/5.8):Math.min(1.2,worldW/9.5);const right=mobile?0:worldW*.19;
  // The same visible record travels continuously to the hidden landing anchor.
@@ -117,6 +131,8 @@ renderScene=(s,time,mx,my,dt)=>{const mobile=w<=760,worldW=8.45*w/h;const deckIn
  speakerOne.scale.multiplyScalar(mix(1,.7,systemIn));speakerTwo.scale.multiplyScalar(.7);speakerOne.position.y-=systemIn*.8;speakerTwo.position.y-=systemIn*.8;
  const pulse=paused?0:Math.sin(time*(audioOn?records[selected].bpm/60*Math.PI*2:3))*.028;speakerOne.userData.woofer.scale.set(1,1,1+pulse*4);speakerTwo.userData.woofer.scale.set(1,1,1+pulse*4);waves.visible=s>2.75;waves.position.y=mobile?-.7:-.4;waves.rotation.y=mx*.05;waves.scale.setScalar(mobile?.55:1);waves.children.forEach((r,i)=>{r.scale.setScalar(1+Math.sin(time*1.2-i*.3)*.04);r.material.opacity=systemIn*(.2-i*.015)});
  const worldFade=1-smooth(.20,.82,s);orbitRecords.visible=worldFade>0;orbitRecords.children.forEach((d,i)=>{const coords=[[mobile?-.34:-.20,mobile?-2.8:-2.2,-.7],[.36,-.3,-1.8]][i];d.position.set(worldW*coords[0]+mx*(i+1)*.15,coords[1]+Math.sin(time*.5+i)*.13-s*(i+1)*2,coords[2]+s*5);d.rotation.set(-.6+i*.22,.3+i*.2,time*.06+i);d.scale.setScalar((mobile?.18:.27)*worldFade*(1+i*.18))});dust.visible=s<1;dust.rotation.z=time*.007;dust.position.y=-s;dust.material.opacity=worldFade*.65;
+ const notationVisibility=smooth(.70,1.02,s)*(1-smooth(1.70,2.06,s));musicalNotes.visible=notationVisibility>.001;
+ musicalNotes.children.forEach((note,i)=>{const flight=(time*.085+i/7)%1,angle=flight*Math.PI*2+i*1.7;const radius=worldW*(mobile?.26:.13);note.position.set(right+Math.cos(angle)*radius,(mobile?-1.2:-.75)+flight*(mobile?2.25:3.8),Math.sin(angle)*1.1+.3);note.rotation.set(Math.sin(time*.5+i)*.15,Math.sin(angle*.7)*.55,Math.sin(angle+i)*.23);const envelope=Math.min(1,flight*7,(1-flight)*7);note.scale.setScalar((mobile?.43:.65)*(i%3===1?.85:1)*notationVisibility);note.userData.material.opacity=notationVisibility*envelope*.95;});
  if(!paused)vinyl.position.y+=Math.sin(time*.8)*.07*(1-landing);renderer.render(scene,camera)};
 renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();document.body.classList.add('no-webgl')});document.body.classList.add('scene-ready');
 }
