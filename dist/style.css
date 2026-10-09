@@ -7,3 +7,18 @@
 .scene-2 h2 span:before{content:' '}.scene-copy{will-change:auto}.big-statement .word{color:inherit}.chapter-progress button{height:32px;padding:15px 0}.chapter-progress button:before{top:16px}.sound-toggle{min-height:36px}#collection,#sessions{scroll-margin-top:95px}
 @media(max-width:760px){.hero-bottom p,.story-bottom p{font-size:11px}.sound-toggle{font-size:8px}.scroll-hint{font-size:6px}#motion{font-size:6px}.hero-kicker{font-size:7px}.hero-kicker span{letter-spacing:.6px}.scene-2 h2 span{white-space:nowrap}.model-label{font-size:6px}.record-note{font-size:7px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}.room-image{clip-path:none!important}.room-title{display:none}.room-caption{opacity:1!important}.big-statement .word{opacity:1!important}.record-card:hover .sleeve{transform:none}}
+
+/* Hero refinement: a stable editorial grid and individually responsive words. */
+.scene-0 h1{font-size:min(15.6vw,25vh);line-height:1.04;letter-spacing:-.022em;width:59%;pointer-events:auto}
+.scene-0 h1 .hero-line{display:block;margin:0;white-space:nowrap;overflow:visible}
+.scene-0 h1 .hero-word{display:inline-block;margin:0;transform-origin:50% 60%;transition:transform .65s cubic-bezier(.22,1,.36,1),color .45s,text-shadow .65s;outline-offset:6px}
+.hero-word:hover,.hero-word:focus-visible{transform:scale(.94) translateY(-.025em);color:var(--ivory);text-shadow:0 .045em 0 #10101020}
+.scene-0 h1 .hero-line:nth-child(2){margin-top:-.035em}
+.orbit-graphic{display:none}.record-note{top:auto;bottom:128px;right:calc(4% + 165px)}
+.scene-ready .hero-word{animation:word-arrive 1.15s cubic-bezier(.22,1,.36,1) both}
+.scene-ready .hero-word:nth-child(2){animation-delay:.1s}.scene-ready .hero-line:nth-child(2) .hero-word{animation-delay:.18s}
+@keyframes word-arrive{from{opacity:0;translate:0 .22em}to{opacity:1;translate:0 0}}
+.closing-cta{justify-content:flex-start}.closing-cta>span{transition:transform .7s cubic-bezier(.22,1,.36,1);transform-origin:left center}.closing-cta:hover>span{transform:scale(.97)}
+@media(max-width:760px){.scene-0 h1{font-size:23vw;width:100%;line-height:1.05}.record-note{bottom:192px;right:6%;font-size:7px}.hero-bottom{bottom:85px}}
+@media(max-width:760px) and (max-height:730px){.scene-0 h1{font-size:21.5vw}.record-note{bottom:168px}}
+@media(prefers-reduced-motion:reduce){.scene-ready .hero-word{animation:none}.hero-word:hover,.hero-word:focus-visible,.closing-cta:hover>span{transform:none;text-shadow:none}}
