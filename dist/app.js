@@ -15,7 +15,7 @@ function openDialog(d){d.showModal();document.body.style.overflow='hidden'}
 const navDialog=$('#nav-dialog'),sessionDialog=$('#session-dialog');$('.menu-toggle').addEventListener('click',()=>openDialog(navDialog));$('#session-open').addEventListener('click',()=>openDialog(sessionDialog));
 $$('dialog').forEach(d=>{d.querySelector('.close').addEventListener('click',()=>d.close());d.addEventListener('close',()=>document.body.style.overflow='');d.addEventListener('click',e=>{const r=d.getBoundingClientRect();if(e.target===d&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))d.close()})});
 $$('#nav-dialog a').forEach(a=>a.addEventListener('click',()=>navDialog.close()));$$('[data-session]').forEach(b=>b.addEventListener('click',()=>{chooseRecord(+b.dataset.session);sessionDialog.close();setAudio(true);$('#collection').scrollIntoView({behavior:'instant'})}));
-$('.journey-button').addEventListener('click',()=>progressButtons[1].click());
+
 const experience=$('.experience'),room=$('.room'),panels=$$('.scene-copy'),progressButtons=$$('[data-scene]');
 progressButtons.forEach(b=>b.addEventListener('click',()=>{const positions=[0,1.3,2.48,3.4];scrollTo({top:experience.offsetTop+positions[+b.dataset.scene]/4*(experience.offsetHeight-innerHeight),behavior:reduced.matches?'instant':'smooth'})}));
 // Each word brightens in reading order as the manifesto enters the viewport.
